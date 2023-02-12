@@ -1,0 +1,33 @@
+{
+  "name": "hardhat",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile": "hardhat compile --force",
+    "test": "hardhat test --network hardhat",
+    "setup": "bash scripts/setup-circom.sh",
+    "compile:circuits": "bash scripts/compile-circuits.sh",
+    "version:fix": "node scripts/bump-solidity.js",
+    "test:full": "npm run compile:circuits && npm run version:fix && npm run compile && npm run test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@lighthouse-web3/sdk": "github:socathie/lighthouse-package",
+    "@nomicfoundation/hardhat-toolbox": "^2.0.1",
+    "@openzeppelin/contracts": "^4.8.1",
+    "@openzeppelin/contracts-upgradeable": "^4.8.1",
+    "base32.js": "^0.1.0",
+    "circom_tester": "^0.0.19",
+    "circomlib": "^2.0.5",
+    "circomlib-ml": "^1.4.4",
+    "dotenv": "^16.0.3",
+    "hardhat": "^2.12.7",
+    "hardhat-contract-sizer": "^2.8.0",
+    "hardhat-deploy": "^0.11.23",
+    "hardhat-gas-reporter": "^1.0.9",
+    "snarkjs": "^0.6.1"
+  }
+}
