@@ -8,14 +8,14 @@ import {
   RainbowKitProvider,
 } from '@rainbow-me/rainbowkit';
 import { configureChains, createClient, WagmiConfig } from 'wagmi';
-import { goerli, mainnet } from 'wagmi/chains';
+import { sepolia } from 'wagmi/chains';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 
 import { YourApp } from './YourApp';
 
 const { chains, provider } = configureChains(
-  [goerli, mainnet],
+  [sepolia],
   [
     alchemyProvider({ apiKey: import.meta.env.ALCHEMY_ID }),
     publicProvider()
