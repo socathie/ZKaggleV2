@@ -12,7 +12,7 @@ const privateKeyBob = process.env.PRIVATE_KEY_BOB;
 const publicKeyBob = process.env.PUBLIC_KEY_BOB;
 
 const apiKey = process.env.API_KEY;
-const path = "assets/mnist_image.pgm"; //Give path to the file
+const path = "assets/0.pgm"; //Give path to the file
 
 const sign_auth_message = async (publicKey, privateKey) => {
     const provider = new ethers.providers.JsonRpcProvider();
@@ -26,14 +26,14 @@ describe("Lighthouse SDK test", function () {
 
     it("Should upload file in raw to lighthouse", async function () {
         const response = await lighthouse.uploadFileRaw(path, apiKey);
-        expect(response.data.Name).equal("mnist_image.pgm");
+        expect(response.data.Name).equal("0.pgm");
         expect(response.data.Hash).equal("bafkreig42jyiawthjkmskza765hn6krgqs7uk7cmtjmggb6mgnjql7dqje");
         expect(response.data.Size).equal("797")
     });
 
     it("Should upload file to lighthouse", async function () {
         const response = await lighthouse.upload(path, apiKey);
-        expect(response.data.Name).equal("mnist_image.pgm");
+        expect(response.data.Name).equal("0.pgm");
         expect(response.data.Hash).equal("QmevD3vQfg6Nf9RYWGCrNdfmT49BhLS714sxGkVifqmYg9");
         expect(response.data.Size).equal("808")
     });
@@ -50,7 +50,7 @@ describe("Lighthouse SDK test", function () {
             signed_message,
         );
 
-        expect(response.data.Name).equal("mnist_image.pgm");
+        expect(response.data.Name).equal("0.pgm");
         // expect(response.data.Hash).equal("QmeakAMwVmYerw8DgZ5jyNHMV8G1fe6cNMvViezzM6bRqt");
         expect(response.data.Size).equal("852");
 
