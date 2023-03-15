@@ -158,7 +158,6 @@ template Main(n) {
     }
 
     hash <== mimc.out;
-    log(hash);
 }
 
 component main = Main(10);

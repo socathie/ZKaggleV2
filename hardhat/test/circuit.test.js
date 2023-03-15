@@ -1,7 +1,6 @@
 const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 const { groth16 } = require("snarkjs");
-const wasm_tester = require("circom_tester").wasm;
 
 const fs = require("fs");
 const crypto = require("crypto");
@@ -12,9 +11,21 @@ const Scalar = require("ffjavascript").Scalar;
 exports.p = Scalar.fromString("21888242871839275222246405745257275088548364400416034343698204186575808495617");
 const Fr = new F1Field(exports.p);
 
-const json = require("./mnist_latest_input.json");
+const { Keypair } = require("../node_modules/circomlib-ml/test/modules/maci-domainobjs");
+const { decrypt } = require("../node_modules/circomlib-ml/test/modules/maci-crypto");
 
-describe("SHA256 MNIST test", function () {
+const json = require("./circuit.json");
+const labels = require("../assets/labels.json");
+
+// read ../assets/cid.txt into an array of strings
+const cids = fs.readFileSync("assets/cid.txt").toString().split("\r");
+// console.log(cids);
+
+const idx = 567;
+
+let modelHash;
+
+describe("circuit.circom test", function () {
     let INPUT = {};
 
     for (const [key, value] of Object.entries(json)) {
@@ -32,66 +43,54 @@ describe("SHA256 MNIST test", function () {
     let Verifier;
     let verifier;
 
-    let digest;
     let a, b, c, Input;
 
-    let digest2;
+    const digests = [];
 
     before(async function () {
-        Verifier = await ethers.getContractFactory("Verifier");
+        Verifier = await ethers.getContractFactory("CircuitVerifier");
         verifier = await Verifier.deploy();
         await verifier.deployed();
 
-        const bytes = fs.readFileSync("assets/mnist_image.pgm");
+        const input = [];
 
-        const hash = crypto.createHash('sha256');
-        hash.update(bytes);
+        for (let i = 0; i < 10; i++) {
+            const bytes = fs.readFileSync("assets/" + (idx + i) + ".pgm");
+            const binary = [...bytes].map((b) => b.toString(2).padStart(8, "0").split("")).flat();
+            input.push(binary);
 
-        digest = hash.digest('hex');
+            const hash = crypto.createHash('sha256');
+            hash.update(bytes);
+            digests.push(hash.digest('hex'));
+        }
+        // console.log(input.flat().length);
 
-        const binary = [...bytes].map((b) => b.toString(2).padStart(8, "0").split("")).flat();
-        // console.log(binary);
+        INPUT["in"] = input.flat();
 
-        INPUT["in"] = binary;
-
-        // compute hash from salt and expected output
-        INPUT["salt"] = "123456789";
-
-        const hash2 = crypto.createHash('sha256');
-        const preimage = (5).toString(16).padStart(64, "0") +  (123456789).toString(16).padStart(64, "0");
-        hash2.update(preimage, 'hex');
-        digest2 = hash2.digest('hex');
-        // console.log(digest2);
-        
-        const { proof, publicSignals } = await groth16.fullProve(INPUT, "circuits/build/circuit_js/circuit.wasm","circuits/build/circuit_final.zkey");
+        const { proof, publicSignals } = await groth16.fullProve(INPUT, "circuits/build/circuit_js/circuit.wasm", "circuits/build/circuit_final.zkey");
 
         const calldata = await groth16.exportSolidityCallData(proof, publicSignals);
-        
+
         const argv = calldata.replace(/["[\]\s]/g, "").split(',').map(x => BigInt(x).toString());
-        
+
         a = [argv[0], argv[1]];
         b = [[argv[2], argv[3]], [argv[4], argv[5]]];
         c = [argv[6], argv[7]];
         Input = argv.slice(8);
+        console.log(labels.slice(idx, idx + 10));
+        console.log(Input.slice(0,10));
+
+        modelHash = Input[30];
     });
 
     it("Check circuit output", async () => {
-        const circuit = await wasm_tester("circuits/circuit.circom");
-        // split digest into two slices and convert to BigNumber
-        const digest11 = Fr.e(digest.slice(0, 32), 16);
-        const digest12 = Fr.e(digest.slice(32, 64), 16);
+        for (let i = 0; i < 10; i++) {
+            const digest1 = Fr.e(digests[i].slice(0,32), 16);
+            const digest2 = Fr.e(digests[i].slice(32,64), 16);
 
-        const digest21 = Fr.e(digest2.slice(0, 32), 16);
-        const digest22 = Fr.e(digest2.slice(32, 64), 16);
-
-        const witness = await circuit.calculateWitness(INPUT, true);
-
-        assert(Fr.eq(Fr.e(witness[0]),Fr.e(1)));
-        assert(Fr.eq(Fr.e(witness[1]), Fr.e(digest21)));
-        assert(Fr.eq(Fr.e(witness[2]), Fr.e(digest22)));
-        assert(Fr.eq(Fr.e(witness[3]), Fr.e(digest11)));
-        assert(Fr.eq(Fr.e(witness[4]), Fr.e(digest12)));
-        
+            assert(Fr.eq(Fr.e(Input[i*2+10]),Fr.e(digest1)));
+            assert(Fr.eq(Fr.e(Input[i*2+11]),Fr.e(digest2)));
+        }
     });
 
     it("Verifier should return true for correct proofs", async function () {
@@ -102,31 +101,121 @@ describe("SHA256 MNIST test", function () {
         let a = [0, 0];
         let b = [[0, 0], [0, 0]];
         let c = [0, 0];
-        let d = [0, 0, 0, 0];
-        expect(await verifier.verifyProof(a, b, c, d)).to.be.false;
+        expect(await verifier.verifyProof(a, b, c, Input)).to.be.false;
     });
-
-    let cidraw;
 
     it("CIDv1 should match that from IPFS", async function () {
         const cid_version = 1;
         const cid_codec = 85; // raw 0x55
         const hash_function_code = 18; // SHA-256 0x12
         const length = 32;
-        
-        cidraw = cid_version.toString(16).padStart(2, "0") + cid_codec.toString(16).padStart(2, "0") + hash_function_code.toString(16).padStart(2, "0") + length.toString(16).padStart(2, "0") + digest;
-        const buf = Buffer.from(cidraw, 'hex');
-        
-        const encoder = new base32.Encoder();
-        const cid = encoder.write(buf).finalize().toLowerCase();
 
-        expect("b"+cid).equal("bafkreig42jyiawthjkmskza765hn6krgqs7uk7cmtjmggb6mgnjql7dqje");
+        for (let i = 0; i < 10; i++) {
+            const cidraw = cid_version.toString(16).padStart(2, "0") + cid_codec.toString(16).padStart(2, "0") + hash_function_code.toString(16).padStart(2, "0") + length.toString(16).padStart(2, "0") + digests[i];
+            const buf = Buffer.from(cidraw, 'hex');
+
+            const encoder = new base32.Encoder();
+            const cid = encoder.write(buf).finalize().toLowerCase();
+            expect("b" + cid).equal(cids[idx + i]);
+        }
+    });
+});
+
+describe("encryption.circom test", function () {
+    let input = [];
+
+    for (const [key, value] of Object.entries(json)) {
+        // console.log(key);
+        if (Array.isArray(value)) {
+            let tmpArray = [];
+            for (let i = 0; i < value.flat().length; i++) {
+                tmpArray.push(Fr.e(value.flat()[i]));
+            }
+            input = [...input, ...tmpArray];
+        } else {
+            input.push(value);
+        }
+    }
+
+    for (let i = input.length; i< 1000; i++) {
+        input.push(0);
+    }
+
+    let Verifier;
+    let verifier;
+
+    let a, b, c, Input;
+
+    let keypair;
+    let keypair2;
+
+    let ecdhSharedKey;
+
+    let INPUT = {};
+
+    before(async function () {
+        keypair = new Keypair();
+        keypair2 = new Keypair();
+
+        ecdhSharedKey = Keypair.genEcdhSharedKey(
+            keypair.privKey,
+            keypair2.pubKey,
+        );
+
+        INPUT = {
+            'private_key': keypair.privKey.asCircuitInputs(),
+            'public_key': keypair2.pubKey.asCircuitInputs(),
+            'in': input,
+        }
+
+        // console.log(INPUT);
+        // console.log(INPUT['public_key']);
+
+        Verifier = await ethers.getContractFactory("EncryptionVerifier");
+        verifier = await Verifier.deploy();
+        await verifier.deployed();
+
+        const { proof, publicSignals } = await groth16.fullProve(INPUT, "circuits/build/encryption_js/encryption.wasm", "circuits/build/encryption_final.zkey");
+
+        const calldata = await groth16.exportSolidityCallData(proof, publicSignals);
+
+        const argv = calldata.replace(/["[\]\s]/g, "").split(',').map(x => BigInt(x).toString());
+
+        a = [argv[0], argv[1]];
+        b = [[argv[2], argv[3]], [argv[4], argv[5]]];
+        c = [argv[6], argv[7]];
+        Input = argv.slice(8);
+        // console.log(Input.slice(1000));
     });
 
-    it("Payload CID should match that from Lotus", async function () {
-        const buf = Buffer.from(cidraw, 'hex');
-        const cid = buf.toString('base64');
-        
-        expect("m"+cid).equal("mAVUSINzScIBaZ0qZJWQf907fKiaEv0V8TJpYYwfMM1MF/HBJ");
+    it("Check circuit output", async () => {
+        assert(Fr.eq(Fr.e(Input[0]),Fr.e(modelHash)));
+        assert(Fr.eq(Fr.e(Input[1]),Fr.e(ecdhSharedKey)));
+        assert(Fr.eq(Fr.e(Input[1003]),Fr.e(INPUT['public_key'][0])));
+        assert(Fr.eq(Fr.e(Input[1004]),Fr.e(INPUT['public_key'][1])));
+    });
+
+    it("Verifier should return true for correct proofs", async function () {
+        expect(await verifier.verifyProof(a, b, c, Input)).to.be.true;
+    });
+
+    it("Verifier should return false for invalid proof", async function () {
+        let a = [0, 0];
+        let b = [[0, 0], [0, 0]];
+        let c = [0, 0];
+        expect(await verifier.verifyProof(a, b, c, Input)).to.be.false;
+    });
+
+    it("Decryption should match", async function () {
+        const ciphertext = {
+            iv: Input[2],
+            data: Input.slice(3,1004),
+        }
+
+        const decrypted = decrypt(ciphertext, ecdhSharedKey);
+
+        for (let i = 0; i < 1000; i++) {
+            assert(Fr.eq(Fr.e(decrypted[i]), Fr.e(input[i])));
+        }
     });
 });

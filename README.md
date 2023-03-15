@@ -9,5 +9,6 @@ git submodule update --init --recursive
 
 Full setup:
 ```bash
+cd keras2circom
 python main.py models/best_practice.h5 -o ../hardhat/circuits/ # you may need to manually rename your output files, and delete the last line of the circom file
 ```

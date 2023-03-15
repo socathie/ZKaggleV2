@@ -32,6 +32,8 @@ template encrypt1000() {
     for (var i = 0; i < 1001; i++) {
         out[i] <== enc.out[i];
     }
+
+    shared_key <== ecdh.shared_key;
 }
 
 // fixed MultiMiMC7 with 1000 inputs
