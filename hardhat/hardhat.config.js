@@ -5,7 +5,7 @@ require("hardhat-contract-sizer");
 require("hardhat-gas-reporter");
 require("dotenv").config();
 
-const { PRIVATE_KEY: GOERLI_PRIVATE_KEY, ALCHEMY_API_KEY } = process.env;
+// const { PRIVATE_KEY: GOERLI_PRIVATE_KEY, ALCHEMY_API_KEY } = process.env;
 
 module.exports = {
     solidity: {
@@ -21,13 +21,13 @@ module.exports = {
             gas: 100000000,
             blockGasLimit: 0x1fffffffffffff,
         },
-        goerli: {
-            allowUnlimitedContractSize: true,
-            gas: 100000000,
-            blockGasLimit: 0x1fffffffffffff,
-            url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_API_KEY}`,
-            accounts: [`${GOERLI_PRIVATE_KEY}`],
-        },
+        // goerli: {
+        //     allowUnlimitedContractSize: true,
+        //     gas: 100000000,
+        //     blockGasLimit: 0x1fffffffffffff,
+        //     url: `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_API_KEY}`,
+        //     accounts: [`${GOERLI_PRIVATE_KEY}`],
+        // },
     },
     namedAccounts: {
         deployer: 0,

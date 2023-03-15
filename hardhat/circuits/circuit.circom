@@ -1,17 +1,12 @@
 pragma circom 2.0.0;
 
 include "./model.circom";
-include "../node_modules/circomlib-ml/circuits/circomlib/comparators.circom";
-include "../node_modules/circomlib-ml/circuits/circomlib-matrix/matElemSum.circom";
-include "../node_modules/circomlib/circuits/mimc.circom";
+include "./utils/cid.circom";
+include "./utils/encrypt.circom";
 
 template Main(n) {
-    // public inputs
-    // signal input cid;
-    signal input labels[n];
-    
     // private inputs
-    signal input in[n][28][28][1]; // need to edit to suit bytes
+    signal input in[n][797*8];
     signal input conv2d_weights[3][3][1][4];
     signal input conv2d_bias[4];
     signal input batch_normalization_a[4];
@@ -24,20 +19,34 @@ template Main(n) {
     signal input dense_bias[10];
 
     // outputs
-    signal output numCorrect;
-    signal output modelHash;
+    signal output out[n];
+    signal output cids[n*2];
+    signal output hash;
 
-    signal correct[n];
+    // recurring components
+    component pixel[n];
     component model[n];
-    component isEqual[n];
+    component cid[n];
 
     for (var i = 0; i < n; i++) {
         model[i] = Model();
+        pixel[i] = getPixels();
+        cid[i] = getCid();
+
+        for (var i0 = 0; i0 < 797*8; i0++) {
+            pixel[i].in[i0] <== in[i][i0];
+            cid[i].in[i0] <== in[i][i0];
+        }
+
+        // get cid
+        for (var i0 = 0; i0 < 2; i0++) {
+            cids[i*2+i0] <== cid[i].out[i0];
+        }
 
         for (var i0 = 0; i0 < 28; i0++) {
             for (var i1 = 0; i1 < 28; i1++) {
                 for (var i2 = 0; i2 < 1; i2++) {
-                    model[i].in[i0][i1][i2] <== in[i][i0][i1][i2];
+                    model[i].in[i0][i1][i2] <== pixel[i].out[i0][i1][i2];
         }}}
 
         for (var i0 = 0; i0 < 3; i0++) {
@@ -82,28 +91,12 @@ template Main(n) {
             model[i].dense_bias[i0] <== dense_bias[i0];
         }
 
-        // check cid
-
-        isEqual[i] = IsEqual();
-        isEqual[i].in[0] <== model[i].out[0];
-        isEqual[i].in[1] <== labels[i];
-        correct[i] <== isEqual[i].out;
-
-        log(model[i].out[0]);
-        log(labels[i]);
-        log(correct[i]);
+        out[i] <== model[i].out[0];
     }
-
-    component sum = matElemSum(n,1);
-    for (var i = 0; i < n; i++) {
-        sum.a[i][0] <== correct[i];
-    }
-    numCorrect <== sum.out;
 
     // hash model weights
 
-    component mimc = MultiMiMC7(3*3*1*4+4+4+4+3*3*4*16+16+16+16+16*10+10, 91);
-    mimc.k <== 0;
+    component mimc = hash1000();
     var idx = 0;
 
     for (var i0 = 0; i0 < 3; i0++) {
@@ -159,8 +152,13 @@ template Main(n) {
         idx++;
     }
 
-    modelHash <== mimc.out;
-    log(modelHash);
+    // padding
+    for (var i = idx; i < 1000; i++) {
+        mimc.in[i] <== 0;
+    }
+
+    hash <== mimc.out;
+    log(hash);
 }
 
-component main = Main(2);
+component main = Main(10);
