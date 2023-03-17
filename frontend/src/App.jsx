@@ -1,40 +1,50 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
 import './App.css'
 
 import '@rainbow-me/rainbowkit/styles.css';
 import {
-  getDefaultWallets,
+  connectorsForWallets,
+  wallet,
   RainbowKitProvider,
-} from '@rainbow-me/rainbowkit';
-import { configureChains, createClient, WagmiConfig } from 'wagmi';
-import { localhost } from 'wagmi/chains';
-// import { alchemyProvider } from 'wagmi/providers/alchemy';
-import { publicProvider } from 'wagmi/providers/public';
+  midnightTheme,
+} from "@rainbow-me/rainbowkit";
+import { chain, configureChains, createClient, WagmiConfig } from "wagmi";
+import { alchemyProvider } from "wagmi/providers/alchemy";
+import { publicProvider } from "wagmi/providers/public";
 
 import { YourApp } from './YourApp';
 
 const { chains, provider } = configureChains(
-  [localhost],
   [
-    // alchemyProvider({ apiKey: import.meta.env.ALCHEMY_ID }),
-    publicProvider()
+    chain.polygon,
+    chain.localhost,
+  ],
+  [
+    alchemyProvider({ apiKey: import.meta.env.ALCHEMY_ID }),
+    publicProvider(),
   ]
 );
-const { connectors } = getDefaultWallets({
-  appName: 'My RainbowKit App',
-  chains
-});
+
+const connectors = connectorsForWallets([
+  {
+    groupName: "Recommended",
+    wallets: [
+      wallet.metaMask({ chains, shimDisconnect: true }),
+      wallet.walletConnect({ chains }),
+      wallet.rainbow({ chains }),
+    ],
+  },
+]);
+
 const wagmiClient = createClient({
-  autoConnect: true,
+  autoConnect: false,
   connectors,
-  provider
-})
+  provider,
+});
 
 const App = () => {
   return (
     <WagmiConfig client={wagmiClient}>
-      <RainbowKitProvider chains={chains}>
+      <RainbowKitProvider chains={chains} theme={midnightTheme()} coolMode>
         <YourApp />
       </RainbowKitProvider>
     </WagmiConfig>
