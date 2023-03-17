@@ -8,16 +8,16 @@ import {
   RainbowKitProvider,
 } from '@rainbow-me/rainbowkit';
 import { configureChains, createClient, WagmiConfig } from 'wagmi';
-import { sepolia } from 'wagmi/chains';
-import { alchemyProvider } from 'wagmi/providers/alchemy';
+import { localhost } from 'wagmi/chains';
+// import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
 
 import { YourApp } from './YourApp';
 
 const { chains, provider } = configureChains(
-  [sepolia],
+  [localhost],
   [
-    alchemyProvider({ apiKey: import.meta.env.ALCHEMY_ID }),
+    // alchemyProvider({ apiKey: import.meta.env.ALCHEMY_ID }),
     publicProvider()
   ]
 );
