@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.17;
 
-interface IVerifier {
+interface ICircuitVerifier {
     function verifyProof(
         uint[2] memory a,
         uint[2][2] memory b,

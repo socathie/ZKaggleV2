@@ -11,8 +11,8 @@ const Scalar = require("ffjavascript").Scalar;
 exports.p = Scalar.fromString("21888242871839275222246405745257275088548364400416034343698204186575808495617");
 const Fr = new F1Field(exports.p);
 
-const { Keypair } = require("../node_modules/circomlib-ml/test/modules/maci-domainobjs");
-const { decrypt } = require("../node_modules/circomlib-ml/test/modules/maci-crypto");
+const { Keypair } = require("circomlib-ml/test/modules/maci-domainobjs");
+const { decrypt } = require("circomlib-ml/test/modules/maci-crypto");
 
 const json = require("./circuit.json");
 const labels = require("../assets/labels.json");
@@ -79,6 +79,16 @@ describe("circuit.circom test", function () {
         Input = argv.slice(8);
         console.log(labels.slice(idx, idx + 10));
         console.log(Input.slice(0,10));
+
+        const calldataJson = {
+            "a": a,
+            "b": b,
+            "c": c,
+            "input": Input,
+        }
+
+        // save calldata to json file
+        fs.writeFileSync("./test/circuitCalldata.json", JSON.stringify(calldataJson));
 
         modelHash = Input[30];
     });
@@ -186,6 +196,16 @@ describe("encryption.circom test", function () {
         c = [argv[6], argv[7]];
         Input = argv.slice(8);
         // console.log(Input.slice(1000));
+
+        const calldataJson = {
+            "a": a,
+            "b": b,
+            "c": c,
+            "input": Input,
+        }
+
+        // save calldata to json file
+        fs.writeFileSync("./test/encryptionCalldata.json", JSON.stringify(calldataJson));
     });
 
     it("Check circuit output", async () => {
