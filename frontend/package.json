@@ -9,6 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.10.6",
+    "@emotion/styled": "^11.10.6",
+    "@mui/material": "^5.11.13",
     "@rainbow-me/rainbowkit": "^0.12.1",
     "buffer": "^6.0.3",
     "ethers": "^5.7.2",

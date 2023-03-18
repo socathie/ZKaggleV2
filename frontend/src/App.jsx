@@ -1,21 +1,25 @@
-import './App.css'
-
 import '@rainbow-me/rainbowkit/styles.css';
 import {
   getDefaultWallets,
   RainbowKitProvider,
+  darkTheme,
 } from '@rainbow-me/rainbowkit';
 import { configureChains, createClient, WagmiConfig } from 'wagmi';
-import { localhost } from 'wagmi/chains';
-// import { alchemyProvider } from 'wagmi/providers/alchemy';
+import { mainnet, localhost } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import BasicTabs from "./TabPanel";
+import CssBaseline from '@mui/material/CssBaseline';
 
-import { YourApp } from './YourApp';
+const theme = createTheme({
+  palette: {
+    mode: 'dark',
+  },
+});
 
 const { chains, provider } = configureChains(
-  [localhost],
+  [mainnet],
   [
-    // alchemyProvider({ apiKey: import.meta.env.ALCHEMY_ID }),
     publicProvider()
   ]
 );
@@ -31,11 +35,14 @@ const wagmiClient = createClient({
 
 const App = () => {
   return (
-    <WagmiConfig client={wagmiClient}>
-      <RainbowKitProvider chains={chains}>
-        <YourApp />
-      </RainbowKitProvider>
-    </WagmiConfig>
+    <ThemeProvider theme={theme}>
+      <WagmiConfig client={wagmiClient}>
+        <RainbowKitProvider chains={chains} theme={darkTheme()}>
+          <CssBaseline />
+          <BasicTabs />
+        </RainbowKitProvider>
+      </WagmiConfig>
+    </ThemeProvider>
   );
 };
 
