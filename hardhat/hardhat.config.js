@@ -17,6 +17,7 @@ module.exports = {
     },
     networks: {
         hardhat: {
+            chainId: 1337,
             allowUnlimitedContractSize: true,
             gas: 100000000,
             blockGasLimit: 0x1fffffffffffff,
