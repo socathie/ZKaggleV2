@@ -5,7 +5,7 @@ import {
   darkTheme,
 } from '@rainbow-me/rainbowkit';
 import { configureChains, createClient, WagmiConfig } from 'wagmi';
-import { mainnet, localhost } from 'wagmi/chains';
+import { localhost } from 'wagmi/chains';
 import { publicProvider } from 'wagmi/providers/public';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import BasicTabs from "./TabPanel";
@@ -18,7 +18,7 @@ const theme = createTheme({
 });
 
 const { chains, provider } = configureChains(
-  [mainnet],
+  [localhost],
   [
     publicProvider()
   ]
