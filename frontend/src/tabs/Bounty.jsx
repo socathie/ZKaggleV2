@@ -1,5 +1,6 @@
-export default function Bounty() {
+
+export default function Bounty(props) {
     return (
-        <div></div>
+        <div>{JSON.stringify(props.bounty)}</div>
     );
 }

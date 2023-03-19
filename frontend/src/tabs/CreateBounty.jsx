@@ -71,7 +71,7 @@ export default function CreateBounty() {
             autoComplete="off"
             textAlign="center"
         >
-            <h1>Create a new bounty</h1>
+            <h2>Create a new bounty</h2>
             <div>
                 <TextField
                     required

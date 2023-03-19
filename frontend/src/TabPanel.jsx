@@ -9,6 +9,10 @@ import MySubmissions from './tabs/MySubmissions';
 import Bounty from './tabs/Bounty';
 import CreateBounty from './tabs/CreateBounty';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useAccount, useContractRead, useContractEvent, useBalance } from 'wagmi';
+import { Contract, ethers } from 'ethers';
+import BountyFactory from './assets/BountyFactory.json';
+import BountyABI from './assets/Bounty.json';
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -38,11 +42,108 @@ function a11yProps(index) {
 }
 
 export default function BasicTabs() {
+    const { address, isConnected } = useAccount();
+
     const [value, setValue] = React.useState(1);
+    const [index, setIndex] = React.useState(0);
 
     const handleChange = (event, newValue) => {
+        event.preventDefault();
         setValue(newValue);
     };
+
+    const { data: bountyCount } = useContractRead({
+        address: BountyFactory.address,
+        abi: BountyFactory.abi,
+        functionName: 'bountyCount',
+    });
+    const initialBounties = [];
+    for (let i = 0; i < bountyCount.toNumber(); i++) {
+        const { data: address } = useContractRead({
+            address: BountyFactory.address,
+            abi: BountyFactory.abi,
+            functionName: 'bounties',
+            args: [i],
+        });
+        const bountyContract = {
+            address: address,
+            abi: BountyABI.abi,
+        };
+        const { data: owner } = useContractRead({
+            ...bountyContract,
+            functionName: 'owner',
+        });
+        const { data: bountyHunter } = useContractRead({
+            ...bountyContract,
+            functionName: 'bountyHunter',
+        });
+        const { data: name } = useContractRead({
+            ...bountyContract,
+            functionName: 'name',
+        });
+        const { data: description } = useContractRead({
+            ...bountyContract,
+            functionName: 'description',
+        });
+        const { data: accuracyThreshold } = useContractRead({
+            ...bountyContract,
+            functionName: 'accuracyThreshold',
+        });
+        const { data: reward } = useBalance({
+            address: address,
+        });
+
+        initialBounties.push({
+            address: address,
+            owner: owner,
+            bountyHunter: bountyHunter,
+            name: name,
+            description: description,
+            accuracyThreshold: accuracyThreshold,
+            reward: reward,
+        });
+    }
+
+    const [bounties, setBounties] = React.useState(initialBounties);
+
+    const provider = new ethers.providers.JsonRpcProvider(
+      "http://localhost:8545"
+    );
+
+    useContractEvent({
+        address: BountyFactory.address,
+        abi: BountyFactory.abi,
+        eventName: 'BountyCreated',
+        async listener(node, event) {
+            const newAddress = event.args[0];
+            console.log('BountyCreated', newAddress);
+            for (let i = 0; i < bounties.length; i++) {
+                if (bounties[i].address === newAddress) {
+                    return;
+                }
+            }
+            const bountyContract = new Contract(newAddress, BountyABI.abi, provider);
+            const owner = await bountyContract.owner();
+            const bountyHunter = await bountyContract.bountyHunter();
+            const name = await bountyContract.name();
+            const description = await bountyContract.description();
+            const accuracyThreshold = await bountyContract.accuracyThreshold();
+            const reward = await provider.getBalance(newAddress);
+            
+            setBounties([...bounties, {
+                address: newAddress,
+                owner: owner,
+                bountyHunter: bountyHunter,
+                name: name,
+                description: description,
+                accuracyThreshold: accuracyThreshold,
+                reward: {formatted: ethers.utils.formatEther(reward)},
+            }]);
+
+            if (address===owner) setValue(3);
+        },
+    });
+
 
     return (
         <Box sx={{ width: '100%' }}>
@@ -65,23 +166,28 @@ export default function BasicTabs() {
                 <ConnectButton />
             </Box>
             <TabPanel value={value} index={0}>
-                <Bounty />
+                {!isConnected && <h2>Connect your wallet to get started</h2>}
+                {isConnected && <Bounty bounty={bounties[index]}/>}
             </TabPanel>
             <TabPanel value={value} index={1}>
                 <About />
             </TabPanel>
             <TabPanel value={value} index={2}>
-                <AllBounties setTab={setValue} />
+                {!isConnected && <h2>Connect your wallet to get started</h2>}
+                {isConnected && <AllBounties setTab={setValue} setIndex={setIndex} bounties={bounties}/>}
             </TabPanel>
             <TabPanel value={value} index={3}>
-                <MyBounties setTab={setValue} />
+                {!isConnected && <h2>Connect your wallet to get started</h2>}
+                {isConnected && <MyBounties setTab={setValue} setIndex={setIndex} bounties={bounties}/>}
             </TabPanel>
             <TabPanel value={value} index={4}>
-                <MySubmissions setTab={setValue} />
+                {!isConnected && <h2>Connect your wallet to get started</h2>}
+                {isConnected && <MySubmissions setTab={setValue} setIndex={setIndex} bounties={bounties}/>}
             </TabPanel>
             <TabPanel value={value} index={5}>
-                <CreateBounty setTab={setValue} />
+                {!isConnected && <h2>Connect your wallet to get started</h2>}
+                {isConnected && <CreateBounty setTab={setValue} setIndex={setIndex} bounties={bounties}/>}
             </TabPanel>
-        </Box>
+        </Box >
     );
 }
