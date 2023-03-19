@@ -33,6 +33,11 @@ describe("Bounty contract test", function () {
                 cidraw.push(decoder.write(cids[idx + i].slice(1)).finalize());
                 _labels.push(labels[idx + i]);
             }
+
+            // write cidraw into a txt file with correct encoding
+            fs.writeFileSync("./test/cidraw.txt", cidraw.map(cid => "0x" + cid.toString('hex')).join("\r"));
+            // write _labels into a txt file
+            fs.writeFileSync("./test/labels.txt", _labels.join("\r"));
         });
 
         it("Should reject deploying the contract is msg.value is 0", async function () {
