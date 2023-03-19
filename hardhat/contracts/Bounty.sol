@@ -45,9 +45,7 @@ contract Bounty is Initializable, OwnableUpgradeable {
     // ! current design only allows one bounty hunter to submit proof
     // TODO: allow multiple bounty hunters to submit proof
 
-    event BountySubmitted();
-    event BountyReleased();
-    event BountyClaimed();
+    event BountyUpdated(uint step);
 
     /*
         Tx 1
@@ -155,7 +153,7 @@ contract Bounty is Initializable, OwnableUpgradeable {
 
         bountyHunter = msg.sender;
 
-        emit BountySubmitted();
+        emit BountyUpdated(2);
         completedStep = 2;
     }
 
@@ -172,7 +170,7 @@ contract Bounty is Initializable, OwnableUpgradeable {
         publicKeys = _publicKeys;
         isComplete = true;
 
-        emit BountyReleased();
+        emit BountyUpdated(3);
         completedStep = 3;
     }
 
@@ -222,7 +220,7 @@ contract Bounty is Initializable, OwnableUpgradeable {
         input = _input;
         payable(msg.sender).transfer(address(this).balance);
 
-        emit BountyClaimed();
+        emit BountyUpdated(4);
         completedStep = 4;
     }
 
