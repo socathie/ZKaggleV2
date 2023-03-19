@@ -89,6 +89,11 @@ export default function BasicTabs() {
             ...bountyContract,
             functionName: 'accuracyThreshold',
         });
+        const { data: completedStep } = useContractRead({
+            ...bountyContract,
+            functionName: 'completedStep',
+        });
+
         const { data: reward } = useBalance({
             address: address,
         });
@@ -100,6 +105,7 @@ export default function BasicTabs() {
             name: name,
             description: description,
             accuracyThreshold: accuracyThreshold,
+            completedStep: completedStep,
             reward: reward,
         });
     }
@@ -156,7 +162,7 @@ export default function BasicTabs() {
                     allowScrollButtonsMobile={true}
                     aria-label="scrollable auto tabs example"
                 >
-                    <Tab label="ZKaggleV2" {...a11yProps(0)} disabled />
+                    <Tab label="ZKaggleV2" {...a11yProps(0)} />
                     <Tab label="About" {...a11yProps(1)} />
                     <Tab label="All Bounties" {...a11yProps(2)} />
                     <Tab label="My Bounties" {...a11yProps(3)} />
