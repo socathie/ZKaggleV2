@@ -5,6 +5,7 @@ import bountyAbi from "../assets/Bounty.json";
 import SubmitBounty from "./steps/1.SubmitBounty";
 import ApproveBounty from "./steps/2.ApproveBounty";
 import SubmitWeights from "./steps/3.SubmitWeights";
+import ReceiveWeights from "./steps/4.ReceiveWeights";
 
 export default function Bounty(props) {
     const { address } = useAccount();
@@ -28,7 +29,6 @@ export default function Bounty(props) {
 
     return (
         <div>
-            <div>Step: {step}</div>
             <Typography variant="h3" component="div">
                 {props.bounty.name}
             </Typography>
@@ -58,8 +58,7 @@ export default function Bounty(props) {
                 {address === props.bounty.bountyHunter && <SubmitWeights bounty={props.bounty} />}
             </div>)}
             {step === 4 && (<div>
-                {address === props.bounty.owner &&
-                    <Typography variant="h4" color="text.primary">Received model weights!</Typography>}
+                {address === props.bounty.owner && <ReceiveWeights bounty={props.bounty} /> }
             </div>)}
         </div>
     );

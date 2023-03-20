@@ -20,7 +20,7 @@ export default function CreateBounty() {
     const [name, setName] = React.useState("Bounty 1");
     const [debounceName] = useDebounce(name, 500);
 
-    const [description, setDescription] = React.useState("This is the first bounty");
+    const [description, setDescription] = React.useState("Achieve 70% accuracy on the MNIST dataset.");
     const [debounceDescription] = useDebounce(description, 500);
 
     const [dataCIDs, setDataCIDs] = React.useState(CIDS.join("\n"));
