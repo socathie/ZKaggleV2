@@ -11,8 +11,10 @@
   "dependencies": {
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
+    "@lighthouse-web3/sdk": "github:socathie/lighthouse-package",
     "@mui/material": "^5.11.13",
     "@rainbow-me/rainbowkit": "^0.12.1",
+    "base32.js": "^0.1.0",
     "buffer": "^6.0.3",
     "ethers": "^5.7.2",
     "process": "^0.11.10",

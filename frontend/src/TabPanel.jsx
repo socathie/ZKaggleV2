@@ -12,7 +12,7 @@ import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount, useContractRead, useContractEvent, useBalance } from 'wagmi';
 import { Contract, ethers } from 'ethers';
 import BountyFactory from './assets/BountyFactory.json';
-import BountyABI from './assets/Bounty.json';
+import bountyAbi from './assets/Bounty.json';
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -58,7 +58,7 @@ export default function BasicTabs() {
         functionName: 'bountyCount',
     });
     const initialBounties = [];
-    for (let i = 0; i < bountyCount.toNumber(); i++) {
+    for (let i = 0; i < bountyCount?.toNumber(); i++) {
         const { data: address } = useContractRead({
             address: BountyFactory.address,
             abi: BountyFactory.abi,
@@ -67,7 +67,7 @@ export default function BasicTabs() {
         });
         const bountyContract = {
             address: address,
-            abi: BountyABI.abi,
+            abi: bountyAbi.abi,
         };
         const { data: owner } = useContractRead({
             ...bountyContract,
@@ -128,7 +128,7 @@ export default function BasicTabs() {
                     return;
                 }
             }
-            const bountyContract = new Contract(newAddress, BountyABI.abi, provider);
+            const bountyContract = new Contract(newAddress, bountyAbi.abi, provider);
             const owner = await bountyContract.owner();
             const bountyHunter = await bountyContract.bountyHunter();
             const name = await bountyContract.name();
