@@ -203,8 +203,19 @@ describe("encryption.circom test", function () {
             "c": c,
             "input": Input,
         }
-
+        
+        const keysJson = [
+            {
+                "private_key": keypair.privKey.asCircuitInputs(),
+                "public_key": keypair.pubKey.asCircuitInputs(),
+            },
+            {
+                "private_key": keypair2.privKey.asCircuitInputs(),
+                "public_key": keypair2.pubKey.asCircuitInputs(),
+            },
+        ]
         // save calldata to json file
+        fs.writeFileSync("./test/keys.json", JSON.stringify(keysJson));
         fs.writeFileSync("./test/encryptionCalldata.json", JSON.stringify(calldataJson));
     });
 
