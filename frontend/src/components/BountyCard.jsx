@@ -3,8 +3,10 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import { CardActionArea } from '@mui/material';
+import { useAccount } from 'wagmi';
 
 export default function BountyCard(props) {
+    const { address } = useAccount();
     return (
         <Card sx={{ minWidth: 300, margin: 1 }}>
             <CardActionArea
@@ -12,7 +14,10 @@ export default function BountyCard(props) {
                     props.setTab(0);
                     props.setIndex(props.index);
                 }}
-                disabled={props.bounty.completedStep?.toNumber()===4}
+                disabled={
+                    (props.bounty.completedStep?.toNumber()===4 && props.bounty.owner !== address) ||
+                    (props.bounty.completedStep?.toNumber() > 1 && props.bounty.owner !== address && props.bounty.bountyHunter !== address)
+                }
             >
                 <CardContent>
                     <Typography gutterBottom variant="h5" component="div">

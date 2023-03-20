@@ -23,16 +23,16 @@ export default function SubmitBounty(props) {
     const [debounceVerifierAddress] = useDebounce(verifierAddress, 500);
 
     const [a, setA] = React.useState(circuitCalldata.a.toString());
-    const [debounceA] = useDebounce(a.split(','), 500);
+    const [debounceA] = useDebounce(a?.split(','), 500);
 
     const [b, setB] = React.useState(circuitCalldata.b.toString());
-    const [debounceB] = useDebounce(b.split(','), 500);
+    const [debounceB] = useDebounce(b?.split(','), 500);
 
     const [c, setC] = React.useState(circuitCalldata.c.toString());
-    const [debounceC] = useDebounce(c.split(','), 500);
+    const [debounceC] = useDebounce(c?.split(','), 500);
 
     const [input, setInput] = React.useState(circuitCalldata.input.toString());
-    const [debounceInput] = useDebounce(input.split(','), 500);
+    const [debounceInput] = useDebounce(input?.split(','), 500);
 
     const progressCallback = (progressData) => {
         let percentageDone =
@@ -122,30 +122,62 @@ export default function SubmitBounty(props) {
 
     return (
         <div>
-            <Typography variant="h4" color="text.primary">1. Download data</Typography>
+            <Typography
+                variant="h4" color="text.primary">
+                1. Download data
+            </Typography>
             <div>
                 <Button
+
                     variant="contained"
                     color="primary"
                     onClick={() => loadCids()}
                 >
                     Fetch
                 </Button>
+            </div><div>
+                {links.map((link, index) => {
+                    return (
+                        <Button
+                            key={index}
+                            variant="outlined" color="secondary"
+                            href={link} target="_blank">
+                            Download file {index}
+                        </Button>
+                    )
+                })}
             </div>
-            {links.map((link, index) => {
-                return (
-                    <Button variant="outlined" color="secondary" href={link} target="_blank">Download file {index}</Button>
-                )
-            })}
-            <Typography variant="h4" color="text.primary">2. Process task locally</Typography>
-            <Typography variant="h4" color="text.primary">3. Upload circom, zkey, and verifier</Typography>
-            <Typography variant="h6" color="text.secondary">Upload zkey file</Typography>
-            <input onChange={e => uploadZkey(e)} type="file" />
-            <Typography variant="h6" color="text.secondary">Upload circom file</Typography>
-            <input onChange={e => uploadCircom(e)} type="file" />
-            <Typography variant="h6" color="text.secondary">Upload verifier file</Typography>
-            <input onChange={e => uploadVerifier(e)} type="file" />
-            <Typography variant="h4" color="text.primary">4. Submit bounty</Typography>
+            <br />
+            <Typography
+                variant="h4" color="text.primary">
+                2. Process task locally
+            </Typography>
+            <br />
+            <div>
+                <Typography
+                    variant="h4" color="text.primary">
+                    3. Upload circom, zkey, and verifier
+                </Typography>
+                <Typography
+                    variant="h6" color="text.secondary">
+                    Upload zkey file
+                </Typography>
+                <input onChange={e => uploadZkey(e)} type="file" />
+                <Typography
+                    variant="h6" color="text.secondary">
+                    Upload circom file
+                </Typography>
+                <input onChange={e => uploadCircom(e)} type="file" />
+                <Typography
+                    variant="h6" color="text.secondary">
+                    Upload verifier file
+                </Typography>
+                <input onChange={e => uploadVerifier(e)} type="file" />
+            </div><br />
+            <Typography
+                variant="h4" color="text.primary">
+                4. Submit bounty
+            </Typography>
 
             <Box
                 component="form"
@@ -156,8 +188,6 @@ export default function SubmitBounty(props) {
                 autoComplete="off"
                 textAlign="center"
             >
-
-                <h2>Create a new bounty</h2>
                 <div>
                     <TextField
                         required
@@ -208,7 +238,7 @@ export default function SubmitBounty(props) {
                     }}>
                     Submit
                 </Button>
-                {(isPrepareError || isError) && <Alert severity="error">{(prepareError || error)?.message.split(", method")[0]}</Alert>}
+                {(isPrepareError || isError) && <Alert severity="error">{(prepareError || error)?.message?.split(", method")[0]}</Alert>}
                 {isLoading && <Alert severity="info">Waiting for transaction to be mined...</Alert>}
                 {isSuccess && <Alert severity="success">Transaction mined!</Alert>}
             </Box>
