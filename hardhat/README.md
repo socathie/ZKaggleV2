@@ -4,5 +4,5 @@
 npm install
 npm run setup
 npm run test:full
+npx hardhat node
 ```
-If you have already compiled the circuits before, you can run `npm run test` instead.
