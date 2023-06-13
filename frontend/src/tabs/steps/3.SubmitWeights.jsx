@@ -50,6 +50,9 @@ export default function SubmitWeights(props) {
             [[debounceB[0], debounceB[1]], [debounceB[2], debounceB[3]]],
             debounceC,
             debounceInput,
+            {
+              gasLimit: 50000000
+            }
         ],
     });
 
