@@ -181,8 +181,49 @@ describe("encryption.circom test", function () {
         // console.log(INPUT);
         // console.log(INPUT['public_key']);
 
+        // deploy pairing contracts from pairing100 to pairing1000
+        const Pairing100 = await ethers.getContractFactory("Pairing100");
+        const pairing100 = await Pairing100.deploy();
+        await pairing100.deployed();
+
+        const Pairing200 = await ethers.getContractFactory("Pairing200");
+        const pairing200 = await Pairing200.deploy();
+        await pairing200.deployed();
+
+        const Pairing300 = await ethers.getContractFactory("Pairing300");
+        const pairing300 = await Pairing300.deploy();
+        await pairing300.deployed();
+
+        const Pairing400 = await ethers.getContractFactory("Pairing400");
+        const pairing400 = await Pairing400.deploy();
+        await pairing400.deployed();
+
+        const Pairing500 = await ethers.getContractFactory("Pairing500");
+        const pairing500 = await Pairing500.deploy();
+        await pairing500.deployed();
+
+        const Pairing600 = await ethers.getContractFactory("Pairing600");
+        const pairing600 = await Pairing600.deploy();
+        await pairing600.deployed();
+
+        const Pairing700 = await ethers.getContractFactory("Pairing700");
+        const pairing700 = await Pairing700.deploy();
+        await pairing700.deployed();
+
+        const Pairing800 = await ethers.getContractFactory("Pairing800");
+        const pairing800 = await Pairing800.deploy();
+        await pairing800.deployed();
+
+        const Pairing900 = await ethers.getContractFactory("Pairing900");
+        const pairing900 = await Pairing900.deploy();
+        await pairing900.deployed();
+
+        const Pairing1000 = await ethers.getContractFactory("Pairing1000");
+        const pairing1000 = await Pairing1000.deploy();
+        await pairing1000.deployed();
+
         Verifier = await ethers.getContractFactory("EncryptionVerifier");
-        verifier = await Verifier.deploy();
+        verifier = await Verifier.deploy(pairing100.address, pairing200.address, pairing300.address, pairing400.address, pairing500.address, pairing600.address, pairing700.address, pairing800.address, pairing900.address, pairing1000.address);
         await verifier.deployed();
 
         const { proof, publicSignals } = await groth16.fullProve(INPUT, "circuits/build/encryption_js/encryption.wasm", "circuits/build/encryption_final.zkey");
