@@ -19,8 +19,6 @@ python main.py models/best_practice.h5 -o ../hardhat/circuits/ # you may need to
 
 ## Usage
 
-The contracts are currently too large to be deployed on any testnet. You can run the application locally, but you will need to run a local node.
-
 ```shell
 cd hardhat
 npm install
